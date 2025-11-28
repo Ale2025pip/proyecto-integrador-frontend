@@ -3,53 +3,48 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Navbar from "./components/Navbar";
-import { useEffect, useState } from 'react';
 import Dashboard from './pages/Dashboard';
 import Cart from './pages/Cart';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext'; // 🆕 useAuth agregado
 import { CartProvider } from './context/CartContext';
 import Checkout from './pages/Checkout';
 import MisPedidos from './pages/MisPedidos';
 import AdminPanel from './components/Admin/AdminPanel';
-import UserProfile from './pages/UserProfile'; // 🆕 IMPORT NUEVO
+import UserProfile from './pages/UserProfile';
 
-function App() {
-  const [ isLogin, setIsLogin] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
+function AppContent() {
+  const { isAuthenticated, user, logout } = useAuth(); // 🆕 Usar AuthContext
   const cartItem = 4;
 
-  useEffect(()=>{
-    console.log(isLogin)
-  },[isLogin]);
+  return (
+    <>
+      <Navbar 
+        isLogin={isAuthenticated}  // 🆕 Usar isAuthenticated del contexto
+        isAdmin={user?.role === 'admin'}  // 🆕 Usar user del contexto
+        logOut={logout}  // 🆕 Usar logout del contexto
+        cartItem={cartItem}
+      />
+      <Routes>
+        <Route path="/" element={<Home/>}/>
+        <Route path="/login" element={<Login/>}/>
+        <Route path="/register" element={<Register/>}/>
+        <Route path="/dashboard" element={<Dashboard/>}/>
+        <Route path="/cart" element={<Cart/>}/>
+        <Route path="/*" element={<h1>404</h1>}/>
+        <Route path="/checkout" element={<Checkout/>}/>
+        <Route path="/mis-pedidos" element={<MisPedidos/>}/>
+        <Route path="/admin" element={<AdminPanel />} />
+        <Route path="/mi-perfil" element={<UserProfile />} />
+      </Routes>
+    </>
+  );
+}
 
-  function login(){
-    setIsLogin(true)
-  }
-  function loginAsAdmin(){
-    login()
-    setIsAdmin(true)
-  }
-  function logOut(){
-    setIsAdmin(false)
-    setIsLogin(false)
-  }
-
+function App() {
   return (
     <AuthProvider>
       <CartProvider>
-        <Navbar isLogin={isLogin} isAdmin={isAdmin} logOut={logOut} cartItem={cartItem}/>
-          <Routes>
-            <Route path ="/" element={<Home/>}/>
-            <Route path ="/login" element={<Login/>}/>
-            <Route path ="/register" element={<Register/>}/>
-            <Route path="/dashboard" element={<Dashboard/>}/>
-            <Route path="/cart" element={<Cart/>}/>
-            <Route path ="/*" element={<h1>404</h1>}/>
-            <Route path="/checkout" element={<Checkout/>}/>
-            <Route path="/mis-pedidos" element={<MisPedidos/>}/>
-            <Route path="/admin" element={<AdminPanel />} />
-            <Route path="/mi-perfil" element={<UserProfile />} /> {/* 🆕 RUTA NUEVA */}
-          </Routes>
+        <AppContent /> {/* 🆕 Componente interno que usa useAuth */}
       </CartProvider>
     </AuthProvider>
   );

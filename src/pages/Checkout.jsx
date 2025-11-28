@@ -17,11 +17,11 @@ function Checkout() {
     codigoPostal: user?.direccion?.codigoPostal || '',
     telefono: user?.telefono || '',
     metodoPago: user?.metodoPagoPreferido || 'tarjeta',
-    actualizarPerfil: !user?.nombre // Si no tiene nombre, activar por defecto
+    actualizarPerfil: !user?.nombre
   });
 
-  // DETECTAR SI EL USUARIO TIENE PERFIL COMPLETO
   const tienePerfilCompleto = user?.nombre && user?.apellido && user?.telefono && user?.direccion?.calle;
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -246,11 +246,11 @@ function Checkout() {
               {cartItems.map(item => (
                 <div key={item._id} className="flex justify-between items-center border-b pb-3">
                   <div className="flex items-center gap-3">
-                    <img 
-                      src={item.imagen} 
-                      alt={item.nombre}
-                      className="w-12 h-12 object-cover rounded"
-                    />
+                    {item.imagen ? (
+                      <img src={item.imagen} alt={item.nombre} />
+                      ) : (
+                        <div>📦</div>
+                      )}
                     <div>
                       <p className="font-medium text-gray-800">{item.nombre}</p>
                       <p className="text-sm text-gray-500">Cantidad: {item.quantity}</p>

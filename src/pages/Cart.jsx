@@ -1,14 +1,16 @@
 import { useCart } from '../context/CartContext';
 import { Trash2, Plus, Minus } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 function Cart() {
+  const navigate = useNavigate();
   const { 
     cartItems, 
     removeFromCart, 
     updateQuantity, 
     clearCart,
     getTotalPrice 
-  } = useCart();
+ } = useCart();
 
   if (cartItems.length === 0) {
     return (
@@ -51,11 +53,18 @@ function Cart() {
             {cartItems.map(item => (
               <div key={item._id} className="bg-white rounded-xl shadow-sm border p-6">
                 <div className="flex gap-4">
+                 {item.imagen ? (
+
                   <img 
                     src={item.imagen} 
                     alt={item.nombre}
                     className="w-24 h-24 object-cover rounded-lg"
-                  />
+                   />
+                  ) : (
+                    <div className="w-24 h-24 bg-gray-200 rounded-lg flex items-center justify-center">
+                      <span>📦</span>
+                    </div>
+                  )}                    
                   
                   <div className="flex-1">
                     <h3 className="text-lg font-semibold text-gray-800 mb-2">{item.nombre}</h3>
@@ -120,10 +129,11 @@ function Cart() {
             </div>
 
             <button 
-                onClick={() => window.location.href = '/checkout'}
-                className="w-full bg-green-600 hover:bg-green-700 text-white py-4 rounded-lg font-semibold text-lg transition duration-300 mb-4"
-                >Finalizar Compra
-            </button>
+               onClick={() => navigate('/checkout')}  // 🆕 Usar navigate
+               className="w-full bg-green-600 hover:bg-green-700 text-white py-4 rounded-lg font-semibold text-lg transition duration-300 mb-4"
+             >
+               Finalizar Compra
+             </button>
             
             <button 
               onClick={() => window.location.href = '/'}
