@@ -24,7 +24,7 @@ export const AuthProvider = ({ children }) => {
     }
     setLoading(false);
   }, [token]);
- const login = async (email, password) => {
+const login = async (email, password) => {
   try {
     const data = await authService.login({ email, password });
     console.log("🔐 LOGIN RESPONSE COMPLETA:", data); 
@@ -32,30 +32,24 @@ export const AuthProvider = ({ children }) => {
     if (data.token) {
       setToken(data.token);
       
-      // ✅ DEBUG DETALLADO - ver estructura real
-      console.log("🔐 DATA.USER:", data.user);
-      console.log("🔐 DATA.USER EMAIL:", data.user?.email);
-      console.log("🔐 DATA.USER ROLE:", data.user?.role);
-      
-      // ✅ USAR USER DEL BACKEND CON FALLBACK INTELIGENTE
-      const userData = {
-        email: data.user?.email || email,
-        role: data.user?.role || (email.includes('admin') ? 'admin' : 'user'),
-        ...data.user // mantener cualquier otra propiedad
+      // ✅ USAR DIRECTAMENTE EL USER DEL BACKEND (ahora viene completo)
+      const userData = data.user || {
+        email: email,
+        role: (email.includes('admin') ? 'admin' : 'user')
       };
       
       console.log("🔐 USER DATA FINAL:", userData);
       
       setUser(userData);
       localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(userData)); // ← backup
+      localStorage.setItem('user', JSON.stringify(userData));
       return { success: true };
     }
     return { success: false, error: data.error };
   } catch (error) {
     return { success: false, error: 'Error de conexión' };
   }
-};
+ };
 
   const register = async (email, password) => {
     try {

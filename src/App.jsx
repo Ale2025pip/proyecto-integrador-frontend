@@ -11,6 +11,8 @@ import { CartProvider } from './context/CartContext';
 import Checkout from './pages/Checkout';
 import MisPedidos from './pages/MisPedidos';
 import AdminPanel from './components/Admin/AdminPanel';
+import UserProfile from './pages/UserProfile'; // 🆕 IMPORT NUEVO
+
 function App() {
   const [ isLogin, setIsLogin] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -46,6 +48,7 @@ function App() {
             <Route path="/checkout" element={<Checkout/>}/>
             <Route path="/mis-pedidos" element={<MisPedidos/>}/>
             <Route path="/admin" element={<AdminPanel />} />
+            <Route path="/mi-perfil" element={<UserProfile />} /> {/* 🆕 RUTA NUEVA */}
           </Routes>
       </CartProvider>
     </AuthProvider>

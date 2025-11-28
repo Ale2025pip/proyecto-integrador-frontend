@@ -1,5 +1,6 @@
-import { useState } from 'react'; // <- AGREGAR ESTE IMPORT
+import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { Link } from 'react-router-dom'; // 🆕 IMPORT NUEVO
 import AuthButtons from "./AuthButtons"
 import CartButton from "./CartButton";
 import DashboardButton from "./DashboardButton";
@@ -9,7 +10,7 @@ import CreateProduct from './Admin/CreateProduct';
 
 function Navbar() {
   const {isAuthenticated, user, logout} = useAuth();
-  const [showCreateProduct, setShowCreateProduct] = useState(false); // <- AGREGAR ESTADO
+  const [showCreateProduct, setShowCreateProduct] = useState(false);
   
   return (
     <nav className="bg-green-600 to-emerald-700 shadow-lg">
@@ -24,6 +25,16 @@ function Navbar() {
 
           {/*Botones de usuario */}
           <div className="flex items-center gap-4">
+            {/* 🆕 LINK A MI PERFIL (solo para usuarios logueados) */}
+            {isAuthenticated && user?.role === 'user' && (
+              <Link 
+                to="/mi-perfil"
+                className="text-white hover:text-gray-200 px-3 py-2 rounded-lg font-semibold flex items-center gap-2 transition duration-200"
+              >
+                👤 Mi Perfil
+              </Link>
+            )}
+            
             {/* BOTÓN CREAR PRODUCTO PARA ADMIN */}
             {user?.role === 'admin' && (
               <button 

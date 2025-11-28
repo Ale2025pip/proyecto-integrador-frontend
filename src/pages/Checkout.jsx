@@ -4,45 +4,84 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 function Checkout() {
-    const navigate = useNavigate();
-    const { cartItems, getTotalPrice, clearCart } = useCart();
-    const { user, token } = useAuth();
-    const [formData, setFormData] = useState({
-    direccion: '',
-    ciudad: '',
-    codigoPostal: '',
-    telefono: ''
+  const navigate = useNavigate();
+  const { cartItems, getTotalPrice, clearCart } = useCart();
+  const { user, token } = useAuth();
+  
+ // CARGAR DATOS DEL USUARIO SI EXISTEN
+  const [formData, setFormData] = useState({
+    nombre: user?.nombre || '',
+    apellido: user?.apellido || '',
+    direccion: user?.direccion?.calle || '',
+    ciudad: user?.direccion?.ciudad || '',
+    codigoPostal: user?.direccion?.codigoPostal || '',
+    telefono: user?.telefono || '',
+    metodoPago: user?.metodoPagoPreferido || 'tarjeta',
+    actualizarPerfil: !user?.nombre // Si no tiene nombre, activar por defecto
   });
-  const [loading, setLoading] = useState(false);
+
+  // DETECTAR SI EL USUARIO TIENE PERFIL COMPLETO
+  const tienePerfilCompleto = user?.nombre && user?.apellido && user?.telefono && user?.direccion?.calle;
+
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  setLoading(true);
+    e.preventDefault();
+    setLoading(true);
 
-  try {
-    const pedidoData = {
-      productos: cartItems.map(item => ({
-        producto: item._id,
-        cantidad: item.quantity,
-        precioUnitario: item.precio
-      })),
-      direccionEnvio: `${formData.direccion}, ${formData.ciudad}, ${formData.codigoPostal}`,
-      total: getTotalPrice()
-    };
+    try {
+      // PREPARAR DATOS PARA EL BACKEND
+      const pedidoData = {
+        productos: cartItems.map(item => ({
+          producto: item._id,
+          cantidad: item.quantity
+        })),
+        direccionEnvio: {
+          calle: formData.direccion,
+          ciudad: formData.ciudad,
+          codigoPostal: formData.codigoPostal,
+          pais: 'Argentina'
+        },
+        metodoPago: formData.metodoPago,
+        actualizarPerfil: formData.actualizarPerfil,
+        // Solo enviar si vamos a actualizar perfil
+        ...(formData.actualizarPerfil && {
+          nombre: formData.nombre,
+          apellido: formData.apellido,
+          telefono: formData.telefono
+        })
+      };
 
-    console.log('Datos del pedido:', pedidoData);
-    
-    // Simulación de pedido exitoso
-    setTimeout(() => {
-      alert('🎉 ¡Pedido realizado con éxito!');
-      navigate('/'); // Navega al home sin recargar
-      // NO usar clearCart() por ahora - se pierde el estado
-    }, 1000);
-    
-  } catch (error) {
-    alert('Error al realizar el pedido: ' + error.message);
-    setLoading(false);
-  }
-};
+      console.log('Enviando pedido:', pedidoData);
+
+      // 🚀 URL CORREGIDA - TU BACKEND EN RENDER
+      const response = await fetch('https://proyecto-integrador-v2.onrender.com/api/compras', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(pedidoData)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error al crear la compra');
+      }
+
+      const result = await response.json();
+      
+      // ÉXITO - Limpiar carrito y navegar
+      clearCart();
+      alert(`🎉 ¡Pedido realizado con éxito! Número: ${result.numeroPedido}`);
+      navigate('/mis-compras');
+      
+    } catch (error) {
+      console.error('Error en checkout:', error);
+      alert('Error al realizar el pedido: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (cartItems.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50 py-12">
@@ -51,7 +90,7 @@ function Checkout() {
           <h1 className="text-3xl font-bold text-gray-800 mb-4">Carrito vacío</h1>
           <p className="text-gray-600 mb-8">Agrega productos al carrito antes de finalizar compra</p>
           <button 
-            onClick={() => window.location.href = '/'}
+            onClick={() => navigate('/')}
             className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-semibold"
           >
             Volver a la tienda
@@ -67,15 +106,44 @@ function Checkout() {
         <h1 className="text-3xl font-bold text-gray-800 mb-8">Finalizar Compra</h1>
 
         <div className="grid lg:grid-cols-2 gap-8">
-          {/* FORMULARIO DE ENVÍO */}
+          {/* FORMULARIO COMPLETO */}
           <div className="bg-white rounded-xl shadow-sm border p-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">Información de Envío</h2>
+            <h2 className="text-xl font-bold text-gray-800 mb-4">Información de Envío y Pago</h2>
             
             <form onSubmit={handleSubmit}>
               <div className="space-y-4">
+                {/* NOMBRE Y APELLIDO */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Nombre *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.nombre}
+                      onChange={(e) => setFormData({...formData, nombre: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Apellido *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.apellido}
+                      onChange={(e) => setFormData({...formData, apellido: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    />
+                  </div>
+                </div>
+
+                {/* DIRECCIÓN */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Dirección completa
+                    Dirección completa *
                   </label>
                   <input
                     type="text"
@@ -87,10 +155,11 @@ function Checkout() {
                   />
                 </div>
 
+                {/* CIUDAD Y CÓDIGO POSTAL */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Ciudad
+                      Ciudad *
                     </label>
                     <input
                       type="text"
@@ -99,11 +168,10 @@ function Checkout() {
                       onChange={(e) => setFormData({...formData, ciudad: e.target.value})}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                     />
-                  </div>
-
+                 </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Código Postal
+                      Código Postal *
                     </label>
                     <input
                       type="text"
@@ -115,9 +183,10 @@ function Checkout() {
                   </div>
                 </div>
 
+                {/* TELÉFONO */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Teléfono de contacto
+                    Teléfono de contacto *
                   </label>
                   <input
                     type="tel"
@@ -126,6 +195,36 @@ function Checkout() {
                     onChange={(e) => setFormData({...formData, telefono: e.target.value})}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                   />
+                </div>
+
+                {/* MÉTODO DE PAGO */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Método de Pago *
+                  </label>
+                  <select
+                    value={formData.metodoPago}
+                    onChange={(e) => setFormData({...formData, metodoPago: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  >
+                    <option value="tarjeta">Tarjeta de Crédito/Débito</option>
+                    <option value="transferencia">Transferencia Bancaria</option>
+                    <option value="efectivo">Efectivo</option>
+                  </select>
+                </div>
+
+                {/* GUARDAR EN PERFIL */}
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="actualizarPerfil"
+                    checked={formData.actualizarPerfil}
+                    onChange={(e) => setFormData({...formData, actualizarPerfil: e.target.checked})}
+                    className="mr-2"
+                  />
+                  <label htmlFor="actualizarPerfil" className="text-sm text-gray-700">
+                    Guardar esta información para futuras compras
+                  </label>
                 </div>
               </div>
 
