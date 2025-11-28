@@ -1,16 +1,91 @@
-# React + Vite
+CodeStore - Frontend Ecommerce
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Aplicación Desplegada: https://code-store-psi.vercel.app/
 
-Currently, two official plugins are available:
+Descripción
+Aplicación web SPA (Single Page Application) desarrollada con React como trabajo práctico integrador. Permite realizar un CRUD completo sobre productos (entidad principal) y compras (entidad de soporte), con autenticación, roles de usuario y navegación sin recargas.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Funcionalidades Principales
+Autenticación JWT - Login y registro de usuarios
+Módulo ABMC Completo - Alta, Baja, Modificación, Consulta de productos
+Navegación SPA - React Router para navegación sin recargas
+Gestión de Estado - Hooks de React (useState, useEffect, useContext)
+Roles de Usuario - Admin/Cliente con permisos diferenciados
 
-## React Compiler
+Tecnologías Utilizadas
+Framework: React 18 + Vite
+Enrutamiento: React Router DOM
+Estilos: TailwindCSS
+Estado: React Context API, Hooks
+HTTP: Fetch API
+Deploy: Vercel
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Estructura del Proyecto
+src/
+├── components/
+│ ├── Admin/
+│ │ └── CreateProduct.jsx
+│ ├── Cart/
+│ │ └── CartButton.jsx
+│ ├── Product/
+│ │ └── ProductModal.jsx
+│ └── UI/
+│ ├── Navbar.jsx
+│ ├── Hero.jsx
+│ └── AuthButtons.jsx
+├── context/
+│ ├── AuthContext.js
+│ └── CartContext.js
+├── pages/
+│ ├── Home.jsx
+│ ├── Login.jsx
+│ ├── Register.jsx
+│ ├── Checkout.jsx
+│ └── ProductList.jsx
+├── services/
+│ └── api.js
+├── hooks/
+│ └── (Custom hooks)
+└── App.jsx
 
-## Expanding the ESLint configuration
+Hooks de React Implementados
+- useState - Gestión de estado local en componentes
+- useEffect - Efectos secundarios y llamadas API
+- useContext - Estado global (AuthContext, CartContext)
+- useNavigate - Navegación programática (React Router)
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Navegación SPA
+- `/` - Página de inicio con productos
+- `/login` - Inicio de sesión
+- `/register` - Registro de usuario
+- `/checkout` - Finalizar compra
+- Navegación sin recargas de página
+
+Credenciales de Prueba
+- Administrador: test@postman.com / 123456
+- Usuario regular: [cualquier email al registrarse]
+
+Entidades Implementadas
+
+Entidad Principal: Productos
+- ABMC completo con interfaz de administración
+- Propiedades: nombre, descripción, precio, categoría, stock, imagen
+
+Entidad de Soporte: Compras
+- Integración con sistema de carrito y checkout
+- Relación con productos y usuarios
+
+Repositorios Relacionados
+- [Backend API](https://github.com/Ale2025pip/proyecto-integrador/tree/main/backend)
+- [API Desplegada](https://proyecto-integrador-v2.onrender.com/api)
+
+
+ Configuración
+Crea un archivo `.env` en la raíz del proyecto:
+
+```env
+URL de la API Backend
+VITE_API_URL=https://proyecto-integrador-v2.onrender.com/api
+
+Para desarrollo local usar:
+VITE_API_URL=http://localhost:3000/api
