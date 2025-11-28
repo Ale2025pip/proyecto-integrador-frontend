@@ -117,7 +117,7 @@ const handleDeleteProduct = async (product) => {
         {products.map(product => (
           <div key={product._id} className="bg-white rounded-xl border border-gray-200 hover:shadow-lg transition-all duration-300">
             <img 
-               src={product.imagen || 'https://via.placeholder.com/400x300/f3f4f6/9ca6bb?text=📷+Imagen+no+disponible'} 
+               src={product.imagen ||'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+CiAgPHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzljYTZiYiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPuKKoiBJbWFnZW4gbm8gZGlzcG9uaWJsZSDiiqI8L3RleHQ+Cjwvc3ZnPg=='} 
                alt={product.nombre}
                className="w-full h-64 object-cover rounded-t-xl"
             />
