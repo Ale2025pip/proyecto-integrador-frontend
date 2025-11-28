@@ -23,13 +23,8 @@ export const authService = {
 
 // Servicio de productos
 export const productService = {
-  getProducts: async (token) => {
-    const response = await fetch(`${API_URL}/productos`, {
-      headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      }
-    });
+  getProducts: async () => {
+    const response = await fetch(`${API_URL}/productos`);
     return response.json();
   },
 
@@ -43,5 +38,26 @@ export const productService = {
       body: JSON.stringify(productData)
     });
     return response.json();
-  }
+  },
+  updateProduct: async (id, productData, token) => {
+    const response = await fetch(`${API_URL}/productos/${id}`, {
+      method: 'PUT',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(productData)
+    });
+    return response.json();
+  },
+
+  deleteProduct: async (id, token) => {
+    const response = await fetch(`${API_URL}/productos/${id}`, {
+      method: 'DELETE',
+      headers: { 
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    return response.json();
+  },
 };

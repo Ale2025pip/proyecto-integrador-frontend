@@ -1,45 +1,46 @@
 import { useState, useEffect } from 'react';
+import { productService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import ProductModal from './ProductModal';
-
 function ProductList() {
-    const [products, setProducts] = useState([]);
-    const [selectedProduct, setSelectedProduct] = useState(null);
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const { isAuthenticated, user } = useAuth();
-    const { addToCart } = useCart();
+  const [products, setProducts] = useState([]);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
+  const { isAuthenticated, user, token } = useAuth();
+  const { addToCart } = useCart();
 
-  // Productos de ejemplo - visibles para TODOS
-  const demoProducts = [
-    {
-      _id: '1',
-      nombre: 'Laptop Gamer HP',
-      descripcion: 'Laptop para gaming, 16GB RAM, SSD 512GB, NVIDIA RTX 3060, pantalla 15.6" FHD 144Hz',
-      precio: 1500000,
-      imagen: 'https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=400&h=300&fit=crop',
-      categoria: 'Tecnología',
-      stock: 10
-    },
-    {
-      _id: '2', 
-      nombre: 'iPhone 15 Pro',
-      descripcion: '128GB, cámara triple 48MP, pantalla Super Retina XDR, chip A17 Pro, resistencia al agua IP68',
-      precio: 1800000,
-      imagen: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400&h=300&fit=crop',
-      categoria: 'Celulares',
-      stock: 15
-    },
-    {
-      _id: '3',
-      nombre: 'Auriculares Sony WH-1000XM4',
-      descripcion: 'Cancelación de ruido activa, batería 30h, Bluetooth 5.0, asistente de voz, sonido Hi-Res',
-      precio: 70000,
-      imagen: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=300&fit=crop',
-      categoria: 'Audio',
-      stock: 8
+  // CARGAR PRODUCTOS REALES DEL BACKEND
+  useEffect(() => {
+    loadRealProducts();
+  }, []);
+
+  const loadRealProducts = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+    
+    const data = await productService.getProducts();
+    console.log('📦 Productos del backend:', data);
+  
+    if (data.productos && data.productos.length > 0) {
+      setProducts(data.productos);
+      console.log('✅ Productos cargados');
+    } else {
+      setProducts([]);
+      console.log('⚠️ No hay productos en DB');
     }
-  ];
+  } catch (error) {
+    console.error('❌ Error cargando productos:', error);
+    setError('Error al cargar productos');
+    setProducts([]);
+  } finally {
+    setLoading(false);
+  }
+ };
 
   const handleAddToCart = (product) => {
     addToCart(product);
@@ -50,22 +51,43 @@ function ProductList() {
     setSelectedProduct(product);
     setIsModalOpen(true);
   };
-
-  const handleEditProduct = (product) => {
+  const handleEditProduct = async (product) => {
+  try {
     console.log("✏️ EDITAR PRODUCTO:", product);
-    alert(`Función EDITAR para: ${product.nombre}`);
-  };
-
-  const handleDeleteProduct = (product) => {
-    console.log("🗑️ ELIMINAR PRODUCTO:", product);
-    if (confirm(`¿Estás seguro de eliminar ${product.nombre}?`)) {
-      alert(`Producto ${product.nombre} eliminado (función en desarrollo)`);
+    
+    // Por ahora, función básica con prompt
+    const nuevoNombre = prompt("Nuevo nombre del producto:", product.nombre);
+    if (nuevoNombre && nuevoNombre !== product.nombre) {
+      // Aquí llamaríamos al backend cuando esté listo
+      await productService.updateProduct(product._id, { nombre: nuevoNombre }, token);
+      alert(`Producto actualizado a: ${nuevoNombre}\n(Función conectada al backend)`);
+      
+      // Recargar productos para ver cambios
+      loadRealProducts();
     }
-  };
+  } catch (error) {
+    console.error('Error editando producto:', error);
+    alert('Error al editar producto');
+  }
+ };
 
-  useEffect(() => {
-    setProducts(demoProducts);
-  }, []);
+const handleDeleteProduct = async (product) => {
+  try {
+    console.log("🗑️ ELIMINAR PRODUCTO:", product);
+    
+    if (confirm(`¿Estás seguro de eliminar "${product.nombre}"?`)) {
+      // Aquí llamaríamos al backend cuando esté listo  
+      await productService.deleteProduct(product._id, token);
+      alert(`✅ Producto "${product.nombre}" eliminado\n(Función conectada al backend)`);
+      
+      // Recargar productos para ver cambios
+      loadRealProducts();
+    }
+  } catch (error) {
+    console.error('Error eliminando producto:', error);
+    alert('Error al eliminar producto');
+  }
+ };
 
   const isAdmin = user?.role === 'admin';
 
@@ -74,7 +96,7 @@ function ProductList() {
       
       {/* PRESENTACIÓN */}
       <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold text-gray-800 mb-4">🛍️ Bienvenido a TechStore</h1>
+        <h1 className="text-4xl font-bold text-gray-800 mb-4">🛍️ Bienvenido a Code Store</h1>
         <p className="text-xl text-gray-600 max-w-3xl mx-auto">
           Descubre la mejor tecnología al precio más competitivo. 
           {!isAuthenticated && " Regístrate para comprar y recibir ofertas exclusivas."}
@@ -95,9 +117,9 @@ function ProductList() {
         {products.map(product => (
           <div key={product._id} className="bg-white rounded-xl border border-gray-200 hover:shadow-lg transition-all duration-300">
             <img 
-              src={product.imagen} 
-              alt={product.nombre}
-              className="w-full h-64 object-cover rounded-t-xl"
+               src={product.imagen || 'https://via.placeholder.com/400x300/f3f4f6/9ca6bb?text=📷+Imagen+no+disponible'} 
+               alt={product.nombre}
+               className="w-full h-64 object-cover rounded-t-xl"
             />
             
             <div className="p-6">
@@ -188,4 +210,4 @@ function ProductList() {
   );
 }
 
-export default ProductList;
+export default ProductList
